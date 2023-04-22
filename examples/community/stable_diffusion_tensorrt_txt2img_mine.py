@@ -83,6 +83,7 @@ else:
 # Map of torch dtype -> numpy dtype
 torch_to_numpy_dtype_dict = {value: key for (key, value) in numpy_to_torch_dtype_dict.items()}
 
+os.environ['CUDA_MODULE_LOADING'] = 'LAZY'
 
 def device_view(t):
     return cuda.DeviceView(ptr=t.data_ptr(), shape=t.shape, dtype=torch_to_numpy_dtype_dict[t.dtype])
