@@ -60,6 +60,7 @@ python3 -m pip install onnxruntime
 """
 
 TRT_LOGGER = trt.Logger(trt.Logger.ERROR)
+trt.Pre
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
 # Map of numpy dtype -> torch dtype
@@ -131,7 +132,7 @@ class Engine:
 
         engine = engine_from_network(
             network_from_onnx_path(onnx_path),
-            config=CreateConfig(fp16=fp16, profiles=[p], preview_features=[trt.PreviewFeature.kFASTER_DYNAMIC_SHAPES_0805, trt.PreviewFeature.DISABLE_EXTERNAL_TACTIC_SOURCES_FOR_CORE_0805], load_timing_cache=timing_cache, **config_kwargs),
+            config=CreateConfig(fp16=fp16, profiles=[p], preview_features=[trt.PreviewFeature(0), trt.PreviewFeature.kFASTER_DYNAMIC_SHAPES_0805, trt.PreviewFeature.DISABLE_EXTERNAL_TACTIC_SOURCES_FOR_CORE_0805], load_timing_cache=timing_cache, **config_kwargs),
             save_timing_cache=timing_cache,
         )
         save_engine(engine, path=self.engine_path)
