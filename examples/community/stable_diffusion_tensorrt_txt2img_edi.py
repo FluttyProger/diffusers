@@ -209,7 +209,7 @@ class Optimizer:
 
 
 class BaseModel:
-    def __init__(self, model, fp16=False, device="cuda", max_batch_size=16, embedding_dim=768, text_maxlen=77):
+    def __init__(self, model, fp16=True, device="cuda", max_batch_size=16, embedding_dim=768, text_maxlen=77):
         self.model = model
         self.name = "SD Model"
         self.fp16 = fp16
@@ -911,7 +911,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
                 num_channels_latents,
                 self.image_height,
                 self.image_width,
-                text_embeddings.dtype,
+                torch.float32,
                 self.torch_device,
                 generator,
             )
