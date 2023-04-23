@@ -734,7 +734,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
 
         return self
 
-    def __encode_prompt(self, prompt, negative_prompt, num_images_per_prompt: Optional[int] = 1):
+    def __encode_prompt(self, prompt, negative_prompt):
         r"""
         Encodes the prompt into text encoder hidden states.
 
@@ -783,7 +783,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         ]
 
         # Concatenate the unconditional and text embeddings into a single batch to avoid doing two forward passes for classifier free guidance
-        text_embeddings = torch.cat([uncond_embeddings, text_embeddings]).to(dtype=torch.float16).repeat(1, num_images_per_prompt, 1)
+        text_embeddings = torch.cat([uncond_embeddings, text_embeddings]).to(dtype=torch.float16)
 
         return text_embeddings
 
@@ -905,7 +905,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
 
         with torch.inference_mode(), torch.autocast("cuda"), trt.Runtime(TRT_LOGGER):
             # CLIP text encoder
-            text_embeddings = self.__encode_prompt(prompt, negative_prompt, num_images_per_prompt)
+            text_embeddings = self.__encode_prompt(prompt, negative_prompt)
 
             # Pre-initialize latents
             num_channels_latents = self.unet.in_channels
