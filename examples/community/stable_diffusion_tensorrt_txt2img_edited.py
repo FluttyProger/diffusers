@@ -734,7 +734,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
 
         return self
 
-    def __encode_prompt(self, prompt, negative_prompt):
+    def __encode_prompt(self, prompt, negative_prompt, num_images_per_prompt: Optional[int] = 1):
         r"""
         Encodes the prompt into text encoder hidden states.
 
@@ -783,7 +783,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         ]
 
         # Concatenate the unconditional and text embeddings into a single batch to avoid doing two forward passes for classifier free guidance
-        text_embeddings = torch.cat([uncond_embeddings, text_embeddings]).to(dtype=torch.float16)
+        text_embeddings = torch.cat([uncond_embeddings, text_embeddings]).to(dtype=torch.float16).repeat(1, num_images_per_prompt, 1)
 
         return text_embeddings
 
@@ -838,7 +838,10 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
     def __call__(
         self,
         prompt: Union[str, List[str]] = None,
+        height: Optional[int] = None,
+        width: Optional[int] = None,
         num_inference_steps: int = 50,
+        num_images_per_prompt: Optional[int] = 1,
         guidance_scale: float = 7.5,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
@@ -898,20 +901,20 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
             )
 
         # load resources
-        self.__loadResources(self.image_height, self.image_width, batch_size)
+        self.__loadResources(height, width, batch_size)
 
         with torch.inference_mode(), torch.autocast("cuda"), trt.Runtime(TRT_LOGGER):
             # CLIP text encoder
-            text_embeddings = self.__encode_prompt(prompt, negative_prompt)
+            text_embeddings = self.__encode_prompt(prompt, negative_prompt, num_images_per_prompt)
 
             # Pre-initialize latents
             num_channels_latents = self.unet.in_channels
             latents = self.prepare_latents(
                 batch_size,
                 num_channels_latents,
-                self.image_height,
-                self.image_width,
-                torch.float32,
+                height,
+                width,
+                text_embeddings.dtype,
                 self.torch_device,
                 generator,
             )
