@@ -123,7 +123,7 @@ class Engine:
 
         config_kwargs = {}
 
-        #config_kwargs["preview_features"] = [trt.PreviewFeature.FASTER_DYNAMIC_SHAPES_0805, trt.PreviewFeature.DISABLE_EXTERNAL_TACTIC_SOURCES_FOR_CORE_0805]
+        config_kwargs["preview_features"] = [trt.PreviewFeature.FASTER_DYNAMIC_SHAPES_0805, trt.PreviewFeature.DISABLE_EXTERNAL_TACTIC_SOURCES_FOR_CORE_0805]
         
         if workspace_size > 0:
             config_kwargs["memory_pool_limits"] = {trt.MemoryPoolType.WORKSPACE: workspace_size}
@@ -132,7 +132,7 @@ class Engine:
 
         engine = engine_from_network(
             network_from_onnx_path(onnx_path),
-            config=CreateConfig(fp16=fp16, profiles=[p], preview_features=[trt.PreviewFeature(0), trt.PreviewFeature.kFASTER_DYNAMIC_SHAPES_0805, trt.PreviewFeature.DISABLE_EXTERNAL_TACTIC_SOURCES_FOR_CORE_0805], load_timing_cache=timing_cache, **config_kwargs),
+            config=CreateConfig(fp16=fp16, profiles=[p], load_timing_cache=timing_cache, **config_kwargs),
             save_timing_cache=timing_cache,
         )
         save_engine(engine, path=self.engine_path)
