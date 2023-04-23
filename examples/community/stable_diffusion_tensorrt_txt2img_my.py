@@ -123,9 +123,8 @@ class Engine:
         config_kwargs = {}
 
         config_kwargs["preview_features"] = [trt.PreviewFeature.DISABLE_EXTERNAL_TACTIC_SOURCES_FOR_CORE_0805]
-        if enable_preview:
-            # Faster dynamic shapes made optional since it increases engine build time.
-            config_kwargs["preview_features"].append(trt.PreviewFeature.FASTER_DYNAMIC_SHAPES_0805)
+        config_kwargs["preview_features"].append(trt.PreviewFeature.FASTER_DYNAMIC_SHAPES_0805)
+        
         if workspace_size > 0:
             config_kwargs["memory_pool_limits"] = {trt.MemoryPoolType.WORKSPACE: workspace_size}
         if not enable_all_tactics:
@@ -652,7 +651,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self.timing_cache = timing_cache
         self.build_static_batch = False
         self.build_dynamic_shape = False
-        self.build_preview_features = False
+        self.build_preview_features = True
 
         self.max_batch_size = max_batch_size
         # TODO: Restrict batch size to 4 for larger image dimensions as a WAR for TensorRT limitation.
