@@ -689,8 +689,8 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         use_auth_token = kwargs.pop("use_auth_token", None)
         revision = kwargs.pop("revision", None)
 
-#        cls.cached_folder = (
-#            pretrained_model_name_or_path
+        cls.cached_folder = (
+            pretrained_model_name_or_path
 #            if os.path.isdir(pretrained_model_name_or_path)
 #            else snapshot_download(
 #                pretrained_model_name_or_path,
@@ -701,7 +701,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
 #                use_auth_token=use_auth_token,
 #                revision=revision,
 #            )
-#        )
+        )
 
     def to(self, torch_device: Optional[Union[str, torch.device]] = None, silence_dtype_warnings: bool = False):
         super().to(torch_device, silence_dtype_warnings=silence_dtype_warnings, torch_dtype=torch.float16)
