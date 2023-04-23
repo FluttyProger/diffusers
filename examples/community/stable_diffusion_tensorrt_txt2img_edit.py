@@ -838,17 +838,13 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
     def __call__(
         self,
         prompt: Union[str, List[str]] = None,
-        height: Optional[int] = None,
-        width: Optional[int] = None,
         num_inference_steps: int = 50,
-        num_images_per_prompt: Optional[int] = 1,
         guidance_scale: float = 7.5,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
-
         Args:
             prompt (`str` or `List[str]`, *optional*):
                 The prompt or prompts to guide the image generation. If not defined, one has to pass `prompt_embeds`.
@@ -869,7 +865,6 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
             generator (`torch.Generator` or `List[torch.Generator]`, *optional*):
                 One or a list of [torch generator(s)](https://pytorch.org/docs/stable/generated/torch.Generator.html)
                 to make generation deterministic.
-
         """
         self.generator = generator
         self.denoising_steps = num_inference_steps
@@ -901,7 +896,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
             )
 
         # load resources
-        self.__loadResources(height, width, batch_size)
+        self.__loadResources(self.image_height, self.image_width, batch_size)
 
         with torch.inference_mode(), torch.autocast("cuda"), trt.Runtime(TRT_LOGGER):
             # CLIP text encoder
@@ -912,8 +907,8 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
             latents = self.prepare_latents(
                 batch_size,
                 num_channels_latents,
-                height,
-                width,
+                self.image_height,
+                self.image_width,
                 text_embeddings.dtype,
                 self.torch_device,
                 generator,
