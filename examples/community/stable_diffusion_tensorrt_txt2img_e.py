@@ -839,6 +839,8 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self,
         prompt: Union[str, List[str]] = None,
         num_inference_steps: int = 50,
+        height: Optional[int] = None,
+        width: Optional[int] = None,
         guidance_scale: float = 7.5,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
