@@ -83,7 +83,6 @@ else:
 # Map of torch dtype -> numpy dtype
 torch_to_numpy_dtype_dict = {value: key for (key, value) in numpy_to_torch_dtype_dict.items()}
 
-os.environ['CUDA_MODULE_LOADING'] = 'LAZY'
 
 def device_view(t):
     return cuda.DeviceView(ptr=t.data_ptr(), shape=t.shape, dtype=torch_to_numpy_dtype_dict[t.dtype])
@@ -209,7 +208,7 @@ class Optimizer:
 
 
 class BaseModel:
-    def __init__(self, model, fp16=True, device="cuda", max_batch_size=16, embedding_dim=768, text_maxlen=77):
+    def __init__(self, model, fp16=False, device="cuda", max_batch_size=16, embedding_dim=768, text_maxlen=77):
         self.model = model
         self.name = "SD Model"
         self.fp16 = fp16
@@ -691,20 +690,20 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
 
         cls.cached_folder = (
             pretrained_model_name_or_path
-#            if os.path.isdir(pretrained_model_name_or_path)
-#            else snapshot_download(
-#                pretrained_model_name_or_path,
-#                cache_dir=cache_dir,
-#                resume_download=resume_download,
-#                proxies=proxies,
-#                local_files_only=local_files_only,
-#                use_auth_token=use_auth_token,
-#                revision=revision,
-#            )
+            if os.path.isdir(pretrained_model_name_or_path)
+            else snapshot_download(
+                pretrained_model_name_or_path,
+                cache_dir=cache_dir,
+                resume_download=resume_download,
+                proxies=proxies,
+                local_files_only=local_files_only,
+                use_auth_token=use_auth_token,
+                revision=revision,
+            )
         )
 
     def to(self, torch_device: Optional[Union[str, torch.device]] = None, silence_dtype_warnings: bool = False):
-        super().to(torch_device, silence_dtype_warnings=silence_dtype_warnings, torch_dtype=torch.float16)
+        super().to(torch_device, silence_dtype_warnings=silence_dtype_warnings)
 
         self.onnx_dir = os.path.join(self.cached_folder, self.onnx_dir)
         self.engine_dir = os.path.join(self.cached_folder, self.engine_dir)
@@ -839,14 +838,13 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self,
         prompt: Union[str, List[str]] = None,
         num_inference_steps: int = 50,
-        height: Optional[int] = None,
-        width: Optional[int] = None,
         guidance_scale: float = 7.5,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
+
         Args:
             prompt (`str` or `List[str]`, *optional*):
                 The prompt or prompts to guide the image generation. If not defined, one has to pass `prompt_embeds`.
@@ -867,6 +865,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
             generator (`torch.Generator` or `List[torch.Generator]`, *optional*):
                 One or a list of [torch generator(s)](https://pytorch.org/docs/stable/generated/torch.Generator.html)
                 to make generation deterministic.
+
         """
         self.generator = generator
         self.denoising_steps = num_inference_steps
@@ -905,8 +904,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
             text_embeddings = self.__encode_prompt(prompt, negative_prompt)
 
             # Pre-initialize latents
-            num_channels_latents = self.unet.config.in_channels
-            self.unet.enable_xformers_memory_efficient_attention()
+            num_channels_latents = self.unet.in_channels
             latents = self.prepare_latents(
                 batch_size,
                 num_channels_latents,
