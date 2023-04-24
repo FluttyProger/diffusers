@@ -136,7 +136,6 @@ class Engine:
         G_LOGGER = trt.Logger(trt.Logger.INFO)
         trt.init_libnvinfer_plugins(G_LOGGER, "")
         builder = trt.Builder(G_LOGGER)
-        builder.fp16_mode=True
         config_kwargs["builder"] = builder
         
         engine = engine_from_network(
