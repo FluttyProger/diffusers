@@ -333,36 +333,36 @@ def build_engines(
             logger.warning("Engine build can take a while to complete")
             onnx_path = getOnnxPath(model_name, onnx_dir, opt=False)
             onnx_opt_path = getOnnxPath(model_name, onnx_dir)
-            if force_engine_rebuild or not os.path.exists(onnx_opt_path):
-                if force_engine_rebuild or not os.path.exists(onnx_path):
-                    logger.warning(f"Exporting model: {onnx_path}")
-                    model = model_obj.get_model()
-                    with torch.inference_mode(), torch.autocast("cuda"):
-                        inputs = model_obj.get_sample_input(opt_batch_size, opt_image_height, opt_image_width)
-                        torch.onnx.export(
-                            model,
-                            inputs,
-                            onnx_path,
-                            export_params=True,
-                            opset_version=onnx_opset,
-                            do_constant_folding=True,
-                            input_names=model_obj.get_input_names(),
-                            output_names=model_obj.get_output_names(),
-                            dynamic_axes=model_obj.get_dynamic_axes(),
-                        )
-                    del model
-                    torch.cuda.empty_cache()
-                    gc.collect()
-                else:
-                    logger.warning(f"Found cached model: {onnx_path}")
+#             if force_engine_rebuild or not os.path.exists(onnx_opt_path):
+#                 if force_engine_rebuild or not os.path.exists(onnx_path):
+#                     logger.warning(f"Exporting model: {onnx_path}")
+#                     model = model_obj.get_model()
+#                     with torch.inference_mode(), torch.autocast("cuda"):
+#                         inputs = model_obj.get_sample_input(opt_batch_size, opt_image_height, opt_image_width)
+#                         torch.onnx.export(
+#                             model,
+#                             inputs,
+#                             onnx_path,
+#                             export_params=True,
+#                             opset_version=onnx_opset,
+#                             do_constant_folding=True,
+#                             input_names=model_obj.get_input_names(),
+#                             output_names=model_obj.get_output_names(),
+#                             dynamic_axes=model_obj.get_dynamic_axes(),
+#                         )
+#                     del model
+#                     torch.cuda.empty_cache()
+#                     gc.collect()
+#                 else:
+#                     logger.warning(f"Found cached model: {onnx_path}")
 
-                # Optimize onnx
-                if force_engine_rebuild or not os.path.exists(onnx_opt_path):
-                    logger.warning(f"Generating optimizing model: {onnx_opt_path}")
-                    onnx_opt_graph = model_obj.optimize(onnx.load(onnx_path))
-                    onnx.save(onnx_opt_graph, onnx_opt_path)
-                else:
-                    logger.warning(f"Found cached optimized model: {onnx_opt_path} ")
+#                 # Optimize onnx
+#                 if force_engine_rebuild or not os.path.exists(onnx_opt_path):
+#                     logger.warning(f"Generating optimizing model: {onnx_opt_path}")
+#                     onnx_opt_graph = model_obj.optimize(onnx.load(onnx_path))
+#                     onnx.save(onnx_opt_graph, onnx_opt_path)
+#                 else:
+#                     logger.warning(f"Found cached optimized model: {onnx_opt_path} ")
 
     # Build TensorRT engines
     for model_name, model_obj in models.items():
