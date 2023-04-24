@@ -130,7 +130,15 @@ class Engine:
             config_kwargs["memory_pool_limits"] = {trt.MemoryPoolType.WORKSPACE: workspace_size}
         if not enable_all_tactics:
             config_kwargs["tactic_sources"] = []
-
+        
+        config_kwargs["use_dla"] = True
+        config_kwargs["allow_gpu_fallback"] = True
+        G_LOGGER = trt.Logger(trt.Logger.INFO)
+        trt.init_libnvinfer_plugins(G_LOGGER, "")
+        builder = trt.Builder(G_LOGGER)
+        builder.fp16_mode=True
+        config_kwargs["builder"] = builder
+        
         engine = engine_from_network(
             network_from_onnx_path(onnx_path),
             config=CreateConfig(fp16=fp16, profiles=[p], load_timing_cache=timing_cache, **config_kwargs),
