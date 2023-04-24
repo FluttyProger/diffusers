@@ -370,22 +370,6 @@ def build_engines(
         engine = Engine(engine_path)
         onnx_path = getOnnxPath(model_name, onnx_dir, opt=False)
         onnx_opt_path = getOnnxPath(model_name, onnx_dir)
-
-        if force_engine_rebuild or not os.path.exists(engine.engine_path):
-            engine.build(
-                onnx_opt_path,
-                fp16=True,
-                input_profile=model_obj.get_input_profile(
-                    opt_batch_size,
-                    opt_image_height,
-                    opt_image_width,
-                    static_batch=static_batch,
-                    static_shape=static_shape,
-                ),
-                enable_preview=enable_preview,
-                timing_cache=timing_cache,
-                workspace_size=max_workspace_size,
-            )
         built_engines[model_name] = engine
 
     # Load and activate TensorRT engines
