@@ -456,7 +456,7 @@ def make_CLIP(model, device, max_batch_size, embedding_dim, inpaint=False):
 
 class UNet(BaseModel):
     def __init__(
-        self, model, fp16=True, device="cuda", max_batch_size=16, embedding_dim=2048, text_maxlen=77, unet_dim=4
+        self, model, fp16=False, device="cuda", max_batch_size=16, embedding_dim=2048, text_maxlen=77, unet_dim=4
     ):
         super(UNet, self).__init__(
             model=model,
@@ -519,12 +519,12 @@ class UNet(BaseModel):
 
     def get_sample_input(self, batch_size, image_height, image_width):
         latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
-        dtype = torch.float16 if self.fp16 else torch.float16
+        dtype = torch.float16 if self.fp16 else torch.float32
         return (
             torch.randn(
-                2 * batch_size, self.unet_dim, latent_height, latent_width, dtype=torch.float16, device=self.device
+                2 * batch_size, self.unet_dim, latent_height, latent_width, dtype=torch.float32, device=self.device
             ),
-            torch.tensor([1.0], dtype=torch.float16, device=self.device),
+            torch.tensor([1.0], dtype=torch.float32, device=self.device),
             torch.randn(2 * batch_size, self.text_maxlen, self.embedding_dim, dtype=dtype, device=self.device),
         )
 
@@ -587,7 +587,7 @@ class VAE(BaseModel):
 
     def get_sample_input(self, batch_size, image_height, image_width):
         latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
-        return torch.randn(batch_size, 4, latent_height, latent_width, dtype=torch.float16, device=self.device)
+        return torch.randn(batch_size, 4, latent_height, latent_width, dtype=torch.float32, device=self.device)
 
 
 def make_VAE(model, device, max_batch_size, embedding_dim, inpaint=False):
@@ -925,7 +925,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
                 num_channels_latents,
                 self.image_height,
                 self.image_width,
-                torch.float16,
+                torch.float32,
                 self.torch_device,
                 generator,
             )
