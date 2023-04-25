@@ -316,7 +316,7 @@ def build_engines(
     opt_batch_size=1,
     force_engine_rebuild=False,
     static_batch=False,
-    static_shape=True,
+    static_shape=False,
     enable_preview=False,
     enable_all_tactics=False,
     timing_cache=None,
@@ -660,7 +660,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self.force_engine_rebuild = force_engine_rebuild
         self.timing_cache = timing_cache
         self.build_static_batch = False
-        self.build_dynamic_shape = False
+        self.build_dynamic_shape = True
         self.build_preview_features = False
 
         self.max_batch_size = max_batch_size
@@ -892,7 +892,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         
         # Define call parameters
         if prompt is not None and isinstance(prompt, str):
-            batch_size = 1
+            batch_size = 1 * count
             prompt = [prompt] * count
         elif prompt is not None and isinstance(prompt, list):
             batch_size = len(prompt)
