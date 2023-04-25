@@ -217,7 +217,7 @@ class Optimizer:
 
 
 class BaseModel:
-    def __init__(self, model, fp16=True, device="cuda", max_batch_size=16, embedding_dim=2048, text_maxlen=77):
+    def __init__(self, model, fp16=True, device="cuda", max_batch_size=16, embedding_dim=768, text_maxlen=77):
         self.model = model
         self.name = "SD Model"
         self.fp16 = fp16
@@ -457,7 +457,7 @@ def make_CLIP(model, device, max_batch_size, embedding_dim, inpaint=False):
 
 class UNet(BaseModel):
     def __init__(
-        self, model, fp16=False, device="cuda", max_batch_size=16, embedding_dim=2048, text_maxlen=77, unet_dim=4
+        self, model, fp16=False, device="cuda", max_batch_size=16, embedding_dim=768, text_maxlen=77, unet_dim=4
     ):
         super(UNet, self).__init__(
             model=model,
@@ -634,8 +634,8 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         feature_extractor: CLIPFeatureExtractor,
         requires_safety_checker: bool = True,
         stages=["clip", "unet", "vae"],
-        image_height: int = 2048,
-        image_width: int = 2048,
+        image_height: int = 768,
+        image_width: int = 768,
         max_batch_size: int = 16,
         # ONNX export parameters
         onnx_opset: int = 17,
