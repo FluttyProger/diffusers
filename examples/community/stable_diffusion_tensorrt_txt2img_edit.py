@@ -216,7 +216,7 @@ class Optimizer:
 
 
 class BaseModel:
-    def __init__(self, model, fp16=False, device="cuda", max_batch_size=16, embedding_dim=768, text_maxlen=77):
+    def __init__(self, model, fp16=True, device="cuda", max_batch_size=16, embedding_dim=768, text_maxlen=77):
         self.model = model
         self.name = "SD Model"
         self.fp16 = fp16
@@ -660,7 +660,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self.timing_cache = timing_cache
         self.build_static_batch = False
         self.build_dynamic_shape = False
-        self.build_preview_features = True
+        self.build_preview_features = False
 
         self.max_batch_size = max_batch_size
         # TODO: Restrict batch size to 4 for larger image dimensions as a WAR for TensorRT limitation.
