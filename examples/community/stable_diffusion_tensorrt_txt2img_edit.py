@@ -925,7 +925,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
                 num_channels_latents,
                 self.image_height,
                 self.image_width,
-                torch.float16,
+                torch.float32,
                 self.torch_device,
                 generator,
             )
