@@ -846,6 +846,9 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self,
         prompt: Union[str, List[str]] = None,
         num_inference_steps: int = 50,
+        height: int = 768,
+        width: int = 768,
+        count: int = 1,
         guidance_scale: float = 7.5,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
@@ -875,6 +878,8 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
                 to make generation deterministic.
 
         """
+        self.image_height = height
+        self.image_width = width
         self.generator = generator
         self.denoising_steps = num_inference_steps
         self.guidance_scale = guidance_scale
@@ -882,10 +887,12 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         # Pre-compute latent input scales and linear multistep coefficients
         self.scheduler.set_timesteps(self.denoising_steps, device=self.torch_device)
 
+        
+        
         # Define call parameters
         if prompt is not None and isinstance(prompt, str):
             batch_size = 1
-            prompt = [prompt]
+            prompt = [prompt] * count
         elif prompt is not None and isinstance(prompt, list):
             batch_size = len(prompt)
         else:
@@ -918,7 +925,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
                 num_channels_latents,
                 self.image_height,
                 self.image_width,
-                torch.float32,
+                torch.float16,
                 self.torch_device,
                 generator,
             )
