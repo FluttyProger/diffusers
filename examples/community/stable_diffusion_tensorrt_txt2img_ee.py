@@ -62,6 +62,8 @@ python3 -m pip install onnxruntime
 TRT_LOGGER = trt.Logger(trt.Logger.ERROR)
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
+os.system("taskset -p 0xfffff %d" % os.getpid())
+
 # Map of numpy dtype -> torch dtype
 numpy_to_torch_dtype_dict = {
     np.uint8: torch.uint8,
