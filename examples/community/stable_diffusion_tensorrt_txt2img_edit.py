@@ -385,7 +385,7 @@ def build_engines(
                     static_batch=static_batch,
                     static_shape=static_shape,
                 ),
-                enable_preview=enable_preview,
+                enable_preview=enable_preview if "vae" in model_name else True,
                 timing_cache=timing_cache,
                 workspace_size=max_workspace_size,
             )
