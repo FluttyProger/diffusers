@@ -51,6 +51,7 @@ from diffusers.pipelines.stable_diffusion import (
 from diffusers.schedulers import DDIMScheduler
 from diffusers.utils import DIFFUSERS_CACHE, logging
 
+torch.backends.cuda.matmul.allow_tf32 = True
 
 """
 Installation instructions
@@ -141,7 +142,7 @@ class Engine:
         
         engine = engine_from_network(
             network_from_onnx_path(onnx_path),
-            config=CreateConfig(fp16=fp16, profiles=[p], load_timing_cache=timing_cache, **config_kwargs),
+            config=CreateConfig(tf32=True, fp16=fp16, profiles=[p], load_timing_cache=timing_cache, **config_kwargs),
             save_timing_cache=timing_cache,
         )
         save_engine(engine, path=self.engine_path)
@@ -660,7 +661,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self.timing_cache = timing_cache
         self.build_static_batch = False
         self.build_dynamic_shape = True
-        self.build_preview_features = False
+        self.build_preview_features = True
 
         self.max_batch_size = max_batch_size
         # TODO: Restrict batch size to 4 for larger image dimensions as a WAR for TensorRT limitation.
