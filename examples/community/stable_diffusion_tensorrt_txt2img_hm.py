@@ -142,7 +142,7 @@ class Engine:
         
         engine = engine_from_network(
             network_from_onnx_path(onnx_path),
-            config=CreateConfig(tf32=True, fp16=fp16, profiles=[p], load_timing_cache=timing_cache, **config_kwargs),
+            config=CreateConfig(fp16=fp16, profiles=[p], load_timing_cache=timing_cache, **config_kwargs),
             save_timing_cache=timing_cache,
         )
         save_engine(engine, path=self.engine_path)
