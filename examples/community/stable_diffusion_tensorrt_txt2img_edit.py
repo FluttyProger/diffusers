@@ -385,7 +385,7 @@ def build_engines(
                     static_batch=static_batch,
                     static_shape=static_shape,
                 ),
-                enable_preview=enable_preview if "vae" in model_name else True,
+                enable_preview=enable_preview, # if "vae" in model_name else True,
                 timing_cache=timing_cache,
                 workspace_size=max_workspace_size,
             )
@@ -661,7 +661,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self.timing_cache = timing_cache
         self.build_static_batch = False
         self.build_dynamic_shape = True
-        self.build_preview_features = False
+        self.build_preview_features = True
 
         self.max_batch_size = max_batch_size
         # TODO: Restrict batch size to 4 for larger image dimensions as a WAR for TensorRT limitation.
