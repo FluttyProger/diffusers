@@ -51,8 +51,6 @@ from diffusers.pipelines.stable_diffusion import (
 from diffusers.schedulers import DDIMScheduler
 from diffusers.utils import DIFFUSERS_CACHE, logging
 
-torch.backends.cuda.matmul.allow_tf32 = True
-
 """
 Installation instructions
 python3 -m pip install --upgrade tensorrt
@@ -712,7 +710,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         )
 
     def to(self, torch_device: Optional[Union[str, torch.device]] = None, silence_dtype_warnings: bool = False):
-        super().to(torch_device, silence_dtype_warnings=silence_dtype_warnings)
+        super().to(torch_device, silence_dtype_warnings=silence_dtype_warnings, torch_dtype=torch.float16)
 
         self.onnx_dir = os.path.join(self.cached_folder, self.onnx_dir)
         self.engine_dir = os.path.join(self.cached_folder, self.engine_dir)
