@@ -225,7 +225,7 @@ class BaseModel:
         self.min_batch = 1
         self.max_batch = max_batch_size
         self.min_image_shape = 256  # min image resolution: 256x256
-        self.max_image_shape = 1024  # max image resolution: 1024x1024
+        self.max_image_shape = 2048  # max image resolution: 1024x1024
         self.min_latent_shape = self.min_image_shape // 8
         self.max_latent_shape = self.max_image_shape // 8
 
@@ -659,7 +659,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self.force_engine_rebuild = force_engine_rebuild
         self.timing_cache = timing_cache
         self.build_static_batch = False
-        self.build_dynamic_shape = False
+        self.build_dynamic_shape = True
         self.build_preview_features = False
 
         self.max_batch_size = max_batch_size
