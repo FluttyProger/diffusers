@@ -937,6 +937,6 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
             # VAE decode latent
             images = self.__decode_latent(latents)
 
-        images, has_nsfw_concept = self.run_safety_checker(images, self.torch_device, text_embeddings.dtype)
+#         images, has_nsfw_concept = self.run_safety_checker(images, self.torch_device, text_embeddings.dtype)
         images = self.numpy_to_pil(images)
-        return StableDiffusionPipelineOutput(images=images, nsfw_content_detected=has_nsfw_concept)
+        return StableDiffusionPipelineOutput(images=images) #, nsfw_content_detected=has_nsfw_concept)
