@@ -134,15 +134,15 @@ class Engine:
         if not enable_all_tactics:
             config_kwargs["tactic_sources"] = []
         
-        config_kwargs["use_dla"] = True
-        config_kwargs["allow_gpu_fallback"] = True
+        #config_kwargs["use_dla"] = True
+        #config_kwargs["allow_gpu_fallback"] = True
         G_LOGGER = trt.Logger(trt.Logger.INFO)
         trt.init_libnvinfer_plugins(G_LOGGER, "")
-        builder = trt.Builder(G_LOGGER)
+        #builder = trt.Builder(G_LOGGER)
         
         engine = engine_from_network(
             network_from_onnx_path(onnx_path),
-            config=CreateConfig(tf32=True, fp16=True, profiles=[p], load_timing_cache=timing_cache, **config_kwargs),
+            config=CreateConfig(fp16=True, profiles=[p], load_timing_cache=timing_cache, **config_kwargs),
             save_timing_cache=timing_cache,
         )
         save_engine(engine, path=self.engine_path)
@@ -922,11 +922,11 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
             # Pre-initialize latents
             num_channels_latents = self.unet.in_channels
             latents = self.prepare_latents(
-                batch_size,
+                4,
                 num_channels_latents,
                 self.image_height,
                 self.image_width,
-                torch.float32,
+                torch.float16,
                 self.torch_device,
                 generator,
             )
