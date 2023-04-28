@@ -334,11 +334,11 @@ def build_engines(
         engine = Engine(engine_path)
         onnx_path = getOnnxPath(model_name, onnx_dir, opt=False)
         onnx_opt_path = getOnnxPath(model_name, onnx_dir)
-
         built_engines[model_name] = engine
 
     # Load and activate TensorRT engines
     for model_name, model_obj in models.items():
+        logger.warning(f"TRTmodel: {model_name}")
         engine = built_engines[model_name]
         engine.load()
         engine.activate()
