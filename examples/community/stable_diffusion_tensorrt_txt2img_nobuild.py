@@ -328,10 +328,18 @@ def build_engines(
     if not os.path.isdir(engine_dir):
         os.makedirs(engine_dir)
 
-    # Load and activate TensorRT engines
+    # Build TensorRT engines
     for model_name, model_obj in models.items():
         engine_path = getEnginePath(model_name, engine_dir)
         engine = Engine(engine_path)
+        onnx_path = getOnnxPath(model_name, onnx_dir, opt=False)
+        onnx_opt_path = getOnnxPath(model_name, onnx_dir)
+
+        built_engines[model_name] = engine
+
+    # Load and activate TensorRT engines
+    for model_name, model_obj in models.items():
+        engine = built_engines[model_name]
         engine.load()
         engine.activate()
 
