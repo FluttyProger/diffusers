@@ -330,7 +330,8 @@ def build_engines(
 
     # Load and activate TensorRT engines
     for model_name, model_obj in models.items():
-        engine = built_engines[model_name]
+        engine_path = getEnginePath(model_name, engine_dir)
+        engine = Engine(engine_path)
         engine.load()
         engine.activate()
 
