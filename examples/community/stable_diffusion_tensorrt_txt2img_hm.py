@@ -663,7 +663,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
 
         # build engines
         self.engine = build_engines(
-            self.models,
+            {"clip": None, "unet": None},
             self.engine_dir,
             self.onnx_dir,
             self.onnx_opset,
