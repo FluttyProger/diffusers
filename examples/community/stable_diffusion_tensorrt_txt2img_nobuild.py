@@ -620,7 +620,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
 
     def __loadModels(self):
         # Load pipeline models
-        self.embedding_dim = self.text_encoder.config.hidden_size
+        self.embedding_dim = 768
         models_args = {
             "device": self.torch_device,
             "max_batch_size": self.max_batch_size,
@@ -669,12 +669,9 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self.torch_device = self._execution_device
         logger.warning(f"Running inference on device: {self.torch_device}")
 
-        # load models
-        self.__loadModels()
-
         # build engines
         self.engine = build_engines(
-            self.models,
+            ["clip": None, "unet": None, "vae": None],
             self.engine_dir,
             self.onnx_dir,
             self.onnx_opset,
