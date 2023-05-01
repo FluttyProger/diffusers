@@ -26,7 +26,7 @@ import onnx
 import onnx_graphsurgeon as gs
 import tensorrt as trt
 import torch
-from accelerate.utils import tqdm
+from tqdm import tqdm
 from huggingface_hub import snapshot_download
 from onnx import shape_inference
 from polygraphy import cuda
