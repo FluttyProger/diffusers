@@ -591,6 +591,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         force_engine_rebuild: bool = False,
         timing_cache: str = "timing_cache",
     ):
+        self.tokenizer = CLIPTokenizer.from_pretrained("/files", subfolder="tokenizer", use_auth_token="", local_files_only=True)
         super().__init__(
             vae, text_encoder, tokenizer, unet, scheduler, safety_checker, feature_extractor, requires_safety_checker
         )
