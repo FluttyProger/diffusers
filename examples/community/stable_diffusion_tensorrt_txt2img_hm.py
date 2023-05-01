@@ -26,6 +26,7 @@ import onnx
 import onnx_graphsurgeon as gs
 import tensorrt as trt
 import torch
+from accelerate.utils import tqdm
 from huggingface_hub import snapshot_download
 from onnx import shape_inference
 from polygraphy import cuda
@@ -736,7 +737,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
     ):
         if not isinstance(timesteps, torch.Tensor):
             timesteps = self.scheduler.timesteps
-        for step_index, timestep in enumerate(timesteps):
+        for step_index, timestep in enumerate(tqdm(timesteps)):
             # Expand the latents if we are doing classifier free guidance
             latent_model_input = torch.cat([latents] * 2)
             latent_model_input = self.scheduler.scale_model_input(latent_model_input, timestep)
@@ -784,6 +785,8 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         prompt: Union[str, List[str]] = None,
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
+        height: int = 768,
+        width: int = 768,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
     ):
@@ -812,6 +815,8 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
                 to make generation deterministic.
 
         """
+        self.image_height = height
+        self.image_width = width
         self.generator = generator
         self.denoising_steps = num_inference_steps
         self.guidance_scale = guidance_scale
