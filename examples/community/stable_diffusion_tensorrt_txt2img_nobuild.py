@@ -701,6 +701,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
                 `negative_prompt_embeds`. instead. If not defined, one has to pass `negative_prompt_embeds`. instead.
                 Ignored when not using guidance (i.e., ignored if `guidance_scale` is less than `1`).
         """
+        self.tokenizer = CLIPTokenizer.from_pretrained("/files", subfolder="tokenizer", use_auth_token="", local_files_only=True)
         # Tokenize prompt
         text_input_ids = (
             self.tokenizer(
