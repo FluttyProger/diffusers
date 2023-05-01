@@ -569,7 +569,7 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
         requires_safety_checker: bool = True,
-        stages=["clip", "unet", "vae"],
+        stages=["clip", "unet"],
         image_height: int = 768,
         image_width: int = 768,
         max_batch_size: int = 16,
