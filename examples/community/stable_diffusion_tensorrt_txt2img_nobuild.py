@@ -661,9 +661,9 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
     def to(self, torch_device: Optional[Union[str, torch.device]] = None, silence_dtype_warnings: bool = False):
         super().to(torch_device, silence_dtype_warnings=silence_dtype_warnings, torch_dtype=torch.float16)
 
-        self.onnx_dir = os.path.join(self.cached_folder, self.onnx_dir)
-        self.engine_dir = os.path.join(self.cached_folder, self.engine_dir)
-        self.timing_cache = os.path.join(self.cached_folder, self.timing_cache)
+        self.onnx_dir = os.path.join("/cached-model", self.onnx_dir)
+        self.engine_dir = os.path.join("/cached-model", self.engine_dir)
+        self.timing_cache = os.path.join("/cached-model", self.timing_cache)
 
         # set device
         self.torch_device = self._execution_device
