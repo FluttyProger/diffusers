@@ -662,6 +662,8 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
     def to(self, torch_device: Optional[Union[str, torch.device]] = None, silence_dtype_warnings: bool = False):
         super().to(torch_device, silence_dtype_warnings=silence_dtype_warnings, torch_dtype=torch.float16)
 
+        self.tokenizer = CLIPTokenizer.from_pretrained("/files", subfolder="tokenizer", use_auth_token="", local_files_only=True)
+        
         self.onnx_dir = os.path.join("\\cached-model", self.onnx_dir)
         self.engine_dir = os.path.join("\\cached-model", self.engine_dir)
         self.timing_cache = os.path.join("\\cached-model", self.timing_cache)
