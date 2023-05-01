@@ -51,6 +51,7 @@ from diffusers.pipelines.stable_diffusion import (
 from diffusers.schedulers import DDIMScheduler
 from diffusers.utils import DIFFUSERS_CACHE, logging
 
+
 """
 Installation instructions
 python3 -m pip install --upgrade tensorrt
@@ -60,8 +61,6 @@ python3 -m pip install onnxruntime
 
 TRT_LOGGER = trt.Logger(trt.Logger.ERROR)
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
-
-os.system("taskset -p 0xffffffffffffffffffffffffffffffff %d" % os.getpid())
 
 # Map of numpy dtype -> torch dtype
 numpy_to_torch_dtype_dict = {
@@ -131,13 +130,7 @@ class Engine:
             config_kwargs["memory_pool_limits"] = {trt.MemoryPoolType.WORKSPACE: workspace_size}
         if not enable_all_tactics:
             config_kwargs["tactic_sources"] = []
-        
-        config_kwargs["use_dla"] = True
-        config_kwargs["allow_gpu_fallback"] = True
-        G_LOGGER = trt.Logger(trt.Logger.INFO)
-        trt.init_libnvinfer_plugins(G_LOGGER, "")
-        builder = trt.Builder(G_LOGGER)
-        
+
         engine = engine_from_network(
             network_from_onnx_path(onnx_path),
             config=CreateConfig(fp16=fp16, profiles=[p], load_timing_cache=timing_cache, **config_kwargs),
@@ -215,7 +208,7 @@ class Optimizer:
 
 
 class BaseModel:
-    def __init__(self, model, fp16=True, device="cuda", max_batch_size=16, embedding_dim=768, text_maxlen=77):
+    def __init__(self, model, fp16=False, device="cuda", max_batch_size=16, embedding_dim=768, text_maxlen=77):
         self.model = model
         self.name = "SD Model"
         self.fp16 = fp16
@@ -224,7 +217,7 @@ class BaseModel:
         self.min_batch = 1
         self.max_batch = max_batch_size
         self.min_image_shape = 256  # min image resolution: 256x256
-        self.max_image_shape = 2048  # max image resolution: 1024x1024
+        self.max_image_shape = 1024  # max image resolution: 1024x1024
         self.min_latent_shape = self.min_image_shape // 8
         self.max_latent_shape = self.max_image_shape // 8
 
@@ -326,67 +319,12 @@ def build_engines(
     if not os.path.isdir(engine_dir):
         os.makedirs(engine_dir)
 
-    # Export models to ONNX
-    for model_name, model_obj in models.items():
-        engine_path = getEnginePath(model_name, engine_dir)
-        if force_engine_rebuild or not os.path.exists(engine_path):
-            logger.warning("Building Engines...")
-            logger.warning("Engine build can take a while to complete")
-            onnx_path = getOnnxPath(model_name, onnx_dir, opt=False)
-            onnx_opt_path = getOnnxPath(model_name, onnx_dir)
-            if force_engine_rebuild or not os.path.exists(onnx_opt_path):
-                if force_engine_rebuild or not os.path.exists(onnx_path):
-                    logger.warning(f"Exporting model: {onnx_path}")
-                    model = model_obj.get_model()
-                    with torch.inference_mode(), torch.autocast("cuda"):
-                        inputs = model_obj.get_sample_input(opt_batch_size, opt_image_height, opt_image_width)
-                        torch.onnx.export(
-                            model,
-                            inputs,
-                            onnx_path,
-                            export_params=True,
-                            opset_version=onnx_opset,
-                            do_constant_folding=True,
-                            input_names=model_obj.get_input_names(),
-                            output_names=model_obj.get_output_names(),
-                            dynamic_axes=model_obj.get_dynamic_axes(),
-                        )
-                    del model
-                    torch.cuda.empty_cache()
-                    gc.collect()
-                else:
-                    logger.warning(f"Found cached model: {onnx_path}")
-
-                # Optimize onnx
-                if force_engine_rebuild or not os.path.exists(onnx_opt_path):
-                    logger.warning(f"Generating optimizing model: {onnx_opt_path}")
-                    onnx_opt_graph = model_obj.optimize(onnx.load(onnx_path))
-                    onnx.save(onnx_opt_graph, onnx_opt_path)
-                else:
-                    logger.warning(f"Found cached optimized model: {onnx_opt_path} ")
-
     # Build TensorRT engines
     for model_name, model_obj in models.items():
         engine_path = getEnginePath(model_name, engine_dir)
         engine = Engine(engine_path)
         onnx_path = getOnnxPath(model_name, onnx_dir, opt=False)
         onnx_opt_path = getOnnxPath(model_name, onnx_dir)
-
-        if force_engine_rebuild or not os.path.exists(engine.engine_path):
-            engine.build(
-                onnx_opt_path,
-                fp16=True,
-                input_profile=model_obj.get_input_profile(
-                    opt_batch_size,
-                    opt_image_height,
-                    opt_image_width,
-                    static_batch=static_batch,
-                    static_shape=static_shape,
-                ),
-                enable_preview=enable_preview,
-                timing_cache=timing_cache,
-                workspace_size=max_workspace_size,
-            )
         built_engines[model_name] = engine
 
     # Load and activate TensorRT engines
@@ -658,8 +596,8 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self.force_engine_rebuild = force_engine_rebuild
         self.timing_cache = timing_cache
         self.build_static_batch = False
-        self.build_dynamic_shape = True
-        self.build_preview_features = True
+        self.build_dynamic_shape = False
+        self.build_preview_features = False
 
         self.max_batch_size = max_batch_size
         # TODO: Restrict batch size to 4 for larger image dimensions as a WAR for TensorRT limitation.
@@ -712,9 +650,9 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
     def to(self, torch_device: Optional[Union[str, torch.device]] = None, silence_dtype_warnings: bool = False):
         super().to(torch_device, silence_dtype_warnings=silence_dtype_warnings)
 
-        self.onnx_dir = os.path.join(self.cached_folder, self.onnx_dir)
-        self.engine_dir = os.path.join(self.cached_folder, self.engine_dir)
-        self.timing_cache = os.path.join(self.cached_folder, self.timing_cache)
+        self.onnx_dir = os.path.join("\\cached-model", self.onnx_dir)
+        self.engine_dir = os.path.join("\\cached-model", self.engine_dir)
+        self.timing_cache = os.path.join("\\cached-model", self.timing_cache)
 
         # set device
         self.torch_device = self._execution_device
@@ -845,9 +783,6 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         self,
         prompt: Union[str, List[str]] = None,
         num_inference_steps: int = 50,
-        height: int = 768,
-        width: int = 768,
-        count: int = 1,
         guidance_scale: float = 7.5,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
@@ -877,8 +812,6 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
                 to make generation deterministic.
 
         """
-        self.image_height = height
-        self.image_width = width
         self.generator = generator
         self.denoising_steps = num_inference_steps
         self.guidance_scale = guidance_scale
@@ -886,12 +819,10 @@ class TensorRTStableDiffusionPipeline(StableDiffusionPipeline):
         # Pre-compute latent input scales and linear multistep coefficients
         self.scheduler.set_timesteps(self.denoising_steps, device=self.torch_device)
 
-        
-        
         # Define call parameters
         if prompt is not None and isinstance(prompt, str):
             batch_size = 1
-            prompt = [prompt] * count
+            prompt = [prompt]
         elif prompt is not None and isinstance(prompt, list):
             batch_size = len(prompt)
         else:
